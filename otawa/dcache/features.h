@@ -21,6 +21,7 @@
 #ifndef OTAWA_DCACHE_FEATURES_H_
 #define OTAWA_DCACHE_FEATURES_H_
 
+#include <elm/data/Slice.h>
 #include <otawa/cache/features.h>
 #include <otawa/prop/PropList.h>
 #include <otawa/dfa/BitSet.h>
@@ -31,305 +32,132 @@
 namespace otawa {
 
 namespace ilp { class Var; }
+namespace hard { class Bank; }
 class Inst;
 
 namespace dcache {
 
-// type of unrolling
-#if 0
-typedef enum data_fmlevel_t {
-		DFML_INNER = 0,
-		DFML_OUTER = 1,
-		DFML_MULTI = 2,
-		DFML_NONE
-} data_fmlevel_t;
-#endif
+typedef enum action_t: t::uint8 {
+	NO_ACCESS = 0,
+	LOAD = 1,
+	STORE = 2,
+	PURGE = 3,
+	DIRECT_LOAD = 4,
+	DIRECT_STORE = 5
+} action_t;
+
+typedef enum kind_t: t::uint8 {
+	ANY = 0,
+	BLOCK = 1,
+	RANGE = 2,
+	ENUM = 3
+} kind_t;
 
 
-// ACS class
-class ACS: public ai::State {
-public:
-	inline ACS(const int _size, const int _A, int init = -1) : A (_A), size(_size), age(new int [size])
-		{ for (int i = 0; i < size; i++) age[i] = init; }
-	inline ~ACS() { delete [] age; }
-
-	inline int getSize(void) const { return size; }
-	inline int getA(void) const { return A; }
-
-	inline ACS(const ACS &source) : A(source.A), size(source.size), age(new int [size])
-		{ for (int i = 0; i < size; i++) age[i] = source.age[i]; }
-
-	inline ACS& operator=(const ACS& src) { set(src); return *this; }
-
-	inline bool equals(const ACS& dom) const {
-		ASSERT((A == dom.A) && (size == dom.size));
-		for (int i = 0; i < size; i++) if (age[i] != dom.age[i]) return false;
-		return true;
-	}
-
-	inline void empty(void) { for (int i = 0; i < size; i++) age[i] = -1; }
-	inline bool contains(const int id) const { ASSERT((id < size) && (id >= 0)); return(age[id] != -1); }
-
-	void print(elm::io::Output &output) const;
-
-	inline int getAge(int id) const { ASSERT(id < size); return(age[id]); }
-	inline void setAge(const int id, const int _age)
-		{ ASSERT(id < size); ASSERT((_age < A) || (_age == -1)); age[id] = _age; }
-	inline void set(const ACS& dom)
-		{ ASSERT(A == dom.A); ASSERT(size == dom.size); for(int i = 0; i < size; i++) age[i] = dom.age[i]; }
-
-	inline const int& operator[](int i) const { return age[i]; }
-	inline int& operator[](int i) { return age[i]; }
-
-protected:
-	int A, size;
-	int *age;
-};
-inline io::Output& operator<<(io::Output& out, const ACS& acs) { acs.print(out); return out; }
-
-
-// Block class
 class Block {
 public:
-	inline Block(void): _set(-1), idx(-1) { }
-	inline Block(int set, int index, const Address& address): _set(set), idx(index), addr(address) { ASSERT(!address.isNull()); }
-	inline Block(const Block& block): _set(block._set), idx(block.idx), addr(block.addr) { }
-	inline int set(void) const { return _set; }
-	inline int index(void) const { return idx; }
-	inline const Address& address(void) const { return addr; }
-	void print(io::Output& out) const;
-
+	inline Block(int tag, int set, int id, const hard::Bank *bank)
+		: _tag(tag), _set(set), _id(id), _bank(bank){ }
+	inline int tag() const { return _tag; }
+	inline int set() const { return _set; }
+	inline int id() const { return _id; }
+	inline const hard::Bank *bank() const { return _bank; }
 private:
-	int _set;
-	int idx;
-	Address addr;
+	int _tag, _set, _id;
+	const hard::Bank *_bank;
 };
-inline io::Output& operator<<(io::Output& out, const Block& block) { block.print(out); return out; }
-
-
-// BlockCollection class
-class BlockCollection {
-public:
-	~BlockCollection(void);
-	inline const Block& operator[](int i) const { return *blocks[i]; }
-	const Block& obtain(const Address& addr);
-	inline void setSet(int set) { _set = set; }
-
-	inline int count(void) const { return blocks.count(); }
-	inline int cacheSet(void) const { return _set; }
-
-private:
-	int _set;
-	Vector<Block *> blocks;
-};
+io::Output& operator<<(io::Output& out, const Block& b);
 
 
 // Data
-class BlockAccess: public PropList {
+class Access: public PropList {
 public:
-	typedef enum action_t {
-		NONE = 0,
-		LOAD = 1,
-		STORE = 2,
-		PURGE = 3
-	} action_t;
-	typedef enum kind_t {
-		ANY = 0,
-		BLOCK = 1,
-		RANGE = 2
-	} kind_t;
+	
+	Access();
+	Access(Inst *instruction, action_t action);
+	Access(Inst *instruction, action_t action, const Block *block);
+	Access(Inst *instruction, action_t action, int fst, int lst);
+	Access(Inst *instruction, action_t action, const Vector<const Block *>& blocks);
+	Access(const Access& b);
+	~Access();
+	Access& operator=(const Access& a);
 
-	BlockAccess(void);
-	BlockAccess(Inst *instruction, action_t action);
-	BlockAccess(Inst *instruction, action_t action, const Block& block);
-	BlockAccess(Inst *instruction, action_t action, const Vector<const Block *>& blocks, int setc);
-	BlockAccess(const BlockAccess& b);
-	~BlockAccess();
-	BlockAccess& operator=(const BlockAccess& a);
-
-	inline Inst *instruction(void) const { return inst; }
-	inline kind_t kind(void) const { return kind_t(_kind); }
-	inline bool isAny(void) const { return _kind == ANY; }
-	inline action_t action(void) const { return action_t(_action); }
-	inline const Block& block(void) const { ASSERT(_kind == BLOCK); return *data.blk; }
-	inline int first(void) const { ASSERT(_kind == RANGE); return data.range->fst; }
-	inline int last(void) const { ASSERT(_kind == RANGE); return data.range->lst; }
-	inline bool inRange(int block) const { if(first() <= last()) return first() <= block && block <= last(); else return block <= last() || first() <= block; }
-	bool inSet(int set, const hard::Cache *cache) const;
-	bool in(const Block& block) const;
+	inline Inst *instruction() const { return inst; }
+	inline kind_t kind() const { return _kind; }
+	inline bool isAny() const { return _kind == ANY; }
+	inline action_t action() const { return _action; }
+	inline const Block *block() const { ASSERT(_kind == BLOCK); return data.blk; }
+	inline int first() const
+		{ ASSERT(_kind == RANGE || _kind == ENUM); return data.range->fst; }
+	inline int last() const
+		{ ASSERT(_kind == RANGE || _kind == ENUM); return data.range->lst; }
+	inline bool inRange(const Block *block) const {
+		auto set = block->set();
+		if(first() <= last())
+			return first() <= set && set <= last();
+		else
+			return set <= last() || first() <= set;
+	}
+	bool access(int set) const;
+	bool access(const Block *block) const;
 
 	void print(io::Output& out) const;
 
-	inline const Vector<const Block*>& blocks(void) const { ASSERT(_kind == RANGE); return data.range->bs; }
+	inline const Vector<const Block *>& blocks(void) const
+		{ ASSERT(_kind == ENUM); return data.enm->bs; }
 	const Block *blockIn(int set) const;
-	Address address() const;
 
 private:
-	Inst *inst;
-	t::uint8 _kind, _action;
+	void clear();
+	void set(const Access& a);
 
-	typedef struct {
-		hard::Cache::block_t fst, lst;
-		Vector<const Block*> bs;
-		int setc;
+	Inst *inst;
+	kind_t _kind;
+	action_t _action;
+
+	typedef struct range_t {
+		int fst, lst;
 	} range_t;
+	typedef struct enum_t: range_t {
+		Vector<const Block *> bs;		
+	} enum_t;
 	union {
 		const Block *blk;
 		range_t *range;
+		enum_t *enm;
 	} data;
 };
-inline io::Output& operator<<(io::Output& out, const BlockAccess& acc) { acc.print(out); return out; }
-inline io::Output& operator<<(io::Output& out, const Pair<int, BlockAccess *>& v) { return out; }
-io::Output& operator<< (io::Output& out, BlockAccess::action_t action);
+inline io::Output& operator<<(io::Output& out, const Access& acc)
+	{ acc.print(out); return out; }
+io::Output& operator<< (io::Output& out, action_t action);
 
 
-class NonCachedAccess: public PropList {
+class BlockCollection;
+class SetCollection {
 public:
-	typedef enum kind_t {
-		ANY = 0,
-		SINGLE = 1,
-		MULTIPLE = 2
-	} kind_t;
-
-	inline NonCachedAccess(void): inst(0), _kind(ANY), _action(NONE) { }
-	inline NonCachedAccess(Inst* instx, BlockAccess::action_t actx): inst(instx), _kind(SINGLE), _action(actx) { ASSERT(instx); }
-	inline NonCachedAccess(Inst* instx, BlockAccess::action_t actx, Address addrx): inst(instx), _kind(SINGLE), _action(actx) { ASSERT(instx); addresses.add(addrx); }
-	inline NonCachedAccess(const NonCachedAccess& acc): inst(acc.inst), _kind(acc._kind), _action(acc._action), addresses(acc.addresses) { }
-	inline NonCachedAccess& operator=(const NonCachedAccess& acc) { inst = acc.inst; _kind = acc._kind; _action = acc._action; addresses = acc.addresses; return *this; }
-
-	inline Inst *instruction(void) const { return inst; }
-	inline kind_t kind(void) const { return kind_t(_kind); }
-	inline bool isAny(void) const { return _kind == ANY; }
-	inline BlockAccess::action_t action(void) const { return BlockAccess::action_t(_action); }
-	inline void addAddress(Address addr) { addresses.addLast(addr); _kind = MULTIPLE;}
-	const Vector<Address>& getAddresses(void) const { return addresses; }
-	inline void print(io::Output& out) const {
-		out << inst->address() << " (" << inst << "): " << BlockAccess::action_t(_action) << ' ';
-		if(addresses.count() == 1)
-			out << addresses[0];
-		else if(addresses.count() == 0)
-			out << "multiple addresses";
-		else
-			out << "multiple addresses";
-	}
-
+	SetCollection(const hard::Cache& cache, const hard::Memory& mem);
+	~SetCollection();
+	const Block *at(Address a);
+	const Block *add(Address a);
+	int setCount() const;
+	int blockCount(int set) const;
+	Address address(const Block *block) const;
+	
+	inline const hard::Cache& cache() const { return _cache; }
 private:
-	Inst *inst;
-	t::uint8 _kind, _action;
-	Vector<Address> addresses;
+	const hard::Cache& _cache;
+	const hard::Memory& _mem;
+	BlockCollection **_sets;
 };
 
-inline io::Output& operator<<(io::Output& out, const NonCachedAccess& acc) { acc.print(out); return out; }
+int actualAssoc(const hard::Cache& cache);
 
-// DirtyManager class
-class DirtyManager {
-public:
-
-	typedef struct t {
-		friend class DirtyManager;
-	public:
-		inline t(void) { }
-		inline t(int s): _may(s), _must(s) { }
-		inline t(const t& i): _may(i._may), _must(i._must) { }
-		inline const dfa::BitSet& may(void) const { return _may; }
-		inline const dfa::BitSet& must(void) const { return _must; }
-		void print(io::Output& out) const;
-		inline bool mayBeDirty(int b) const { return _may.contains(b); }
-		inline bool mustBeDirty(int b) const { return _must.contains(b); }
-	private:
-		inline dfa::BitSet& may(void) { return _may; }
-		inline dfa::BitSet& must(void) { return _must; }
-		dfa::BitSet _may, _must;
-	} t;
-
-	DirtyManager(const BlockCollection& coll);
-	bool mayBeDirty(const t& value, int block) const;
-	bool mustBeDirty(const t& value, int block) const;
-	const t& bottom(void) const;
-	const t& top(void) const;
-	void set(t& d, const t& s) const;
-	void update(t& d, const BlockAccess& acc);
-	void join(t& d, const t& s) const;
-	bool equals(const t& s1, const t& s2) const;
-
-private:
-	t bot, _top;
-	const BlockCollection& _coll;
-};
-inline io::Output& operator<<(io::Output& out, const DirtyManager::t& v) { v.print(out); return out; }
 
 // useful typedefs
-typedef AllocArray<ACS *> acs_stack_t;
-typedef Vector<ACS *> acs_table_t;
-typedef Vector<acs_stack_t> acs_stack_table_t;
-
-
-// block analysis
-extern p::feature DATA_BLOCK_FEATURE;
-extern p::feature CLP_BLOCK_FEATURE;
-extern p::id<Bag<BlockAccess> > DATA_BLOCKS;
-extern p::id<Pair<int, NonCachedAccess *> > NC_DATA_ACCESSES;
-extern p::id<const BlockCollection *> DATA_BLOCK_COLLECTION;
-extern p::id<Address> INITIAL_SP;
-
-// MUST analysis
-extern p::feature MUST_ACS_FEATURE;
-extern p::feature PERS_ACS_FEATURE;
-#if 0
-extern p::id<acs_table_t *> MUST_ACS;
-#endif
-extern p::id<acs_table_t *> ENTRY_MUST_ACS;
-#if 0
-extern p::id<acs_table_t *> PERS_ACS;
-#endif
-extern p::id<acs_table_t *> ENTRY_PERS_ACS;
-#if 0
-extern p::id<acs_stack_table_t *> LEVEL_PERS_ACS;
-#endif
-#if 0
-extern p::id<bool> DATA_PSEUDO_UNROLLING;
-extern p::id<data_fmlevel_t> DATA_FIRSTMISS_LEVEL;
-#endif
-
-// categories build
-extern p::id<cache::category_t> WRITETHROUGH_DEFAULT_CAT;
-extern p::feature CATEGORY_FEATURE;
-extern p::id<cache::category_t> CATEGORY;
-extern p::id<otawa::Block *> CATEGORY_HEADER;
-
-// ILP constraint build
-extern p::feature CONSTRAINTS_FEATURE;
-extern p::id<ilp::Var *> MISS_VAR;
-
-// MAY analysis
-extern Identifier<Vector<ACS *> *> ENTRY_MAY_ACS;
-extern p::feature MAY_ACS_FEATURE;
-extern p::id<Vector<ACS *> *> MAY_ACS;
-
-#if 0
-// Dirty analysis
-extern p::feature DIRTY_FEATURE;
-extern p::id<AllocArray<DirtyManager::t> > DIRTY;
-
-// Purge analysis
-typedef enum {
-	INV_PURGE = 0,
-	NO_PURGE = 1,
-	PERS_PURGE = 2,
-	MAY_PURGE = 3,
-	MUST_PURGE = 4
-} purge_t;
-io::Output& operator<<(io::Output& out, purge_t purge);
-extern p::feature PURGE_FEATURE;
-extern p::id<purge_t> PURGE;
-extern p::id<ot::time> PURGE_TIME;
-#endif
-
-// WCET builder
-extern p::feature WCET_FUNCTION_FEATURE;
-
-// Event features
-extern p::feature EVENTS_FEATURE;
+typedef Slice<FragTable<Access> > AccessList;
+extern p::id<AccessList> ACCESSES;
+extern p::interfaced_feature<const SetCollection> ACCESS_FEATURE;
+extern p::interfaced_feature<const SetCollection> CLP_ACCESS_FEATURE;
 
 } }		// otawa::dcache
 

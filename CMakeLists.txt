@@ -6,8 +6,7 @@ set(NAMESPACE	"otawa")
 set(FILES		)
 set(SOURCES
 	"dcache.cpp"
-	"dcache_BlockBuilder.cpp"
-	"dcache_CLPBlockBuilder.cpp"
+	"dcache_CLPAccessBuilder.cpp"
 )
 
 

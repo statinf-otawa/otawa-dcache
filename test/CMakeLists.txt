@@ -3,7 +3,7 @@ set(CC "${PREFIX}gcc")
 set(CFLAGS "-static")
 set(OFLAGS
 	"require:otawa::clp::FILTER_FEATURE"
-	"require:otawa::dcache::CLP_BLOCK_FEATURE"
+	"require:otawa::dcache::CLP_ACCESS_FEATURE"
 	"-P" "--dump"
 	"--add-prop" "otawa::CACHE_CONFIG_PATH=cache-16-4-12.xml"
 	"-v"
