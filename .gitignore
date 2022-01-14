@@ -1,0 +1,15 @@
+dcache.so
+*-otawa
+*.elf
+
+# CMake
+CMakeCache.txt
+install_manifest.txt
+Makefile
+*CMakeFiles
+*.cmake
+
+# KDevelop
+.kdev4
+otawa-dcache.kdev4
+
