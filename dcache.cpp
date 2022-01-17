@@ -26,6 +26,7 @@
 #include <otawa/program.h>
 
 #include "otawa/dcache/features.h"
+#include "otawa/dcache/ACS.h"
 
 using namespace elm;
 using namespace otawa;
@@ -130,7 +131,7 @@ Access::Access(Inst *instruction, action_t action)
  * @param action		Type of action.
  * @param block			Accessed block.
  */
-Access::Access(Inst *instruction, action_t action, const Block *block)
+Access::Access(Inst *instruction, action_t action, const CacheBlock *block)
 : inst(instruction), _kind(BLOCK), _action(action) {
 	ASSERT(instruction != nullptr);
 	data.blk = block;
@@ -145,7 +146,7 @@ Access::Access(Inst *instruction, action_t action, const Block *block)
  * @param first			First accessed block (must a cache block boundary address).
  * @param last			Last access block (must a cache block boundary address).
  */
-Access::Access(Inst *instruction, action_t action, const Vector<const Block *>& blocks)
+Access::Access(Inst *instruction, action_t action, const Vector<const CacheBlock *>& blocks)
 : inst(instruction), _kind(ENUM), _action(action) {
 	ASSERT(instruction != nullptr);
 	data.enm = new enum_t;
@@ -322,7 +323,7 @@ bool Access::access(int set) const {
  * @param block		Block to test.
  * @return			True if it concerned, false else.
  */
-bool Access::access(const Block *block) const {
+bool Access::access(const CacheBlock *block) const {
 	switch(kind()) {
 	case ANY:
 		return true;
@@ -351,26 +352,18 @@ bool Access::access(const Block *block) const {
  * @warning This function is only valid for a RANGE access.
  * @return	Corresponding block or null pointer.
  */
-const Block *Access::blockIn(int set) const {
-	switch(_kind) {
-	case BLOCK:
-		if(data.blk->set() == set)
-			return data.blk;
-		break;
-	case ENUM:
-		if(access(set)) {
-			auto f = first(), l = last();
-			auto bs = blocks();
-			if(f <= l || set >= f)
-				return bs[set];
-			else
-				return bs[set + (bs.length() - l)];
-		}
-		break;
-	default:
-		break;
+const CacheBlock *Access::blockIn(int set) const {
+	ASSERT(_kind == ENUM);
+	if(access(set)) {
+		auto f = first(), l = last();
+		auto bs = blocks();
+		if(f <= l || set >= f)
+			return bs[set - f];
+		else
+			return bs[set + (bs.length() - l)];
 	}
-	return nullptr;
+	else
+		return nullptr;
 }
 
 
@@ -419,10 +412,10 @@ p::interfaced_feature<const SetCollection> ACCESS_FEATURE(
 ///
 class BlockCollection {
 public:
-	typedef avl::Map<int, Block *> map_t;
+	typedef avl::Map<int, CacheBlock *> map_t;
 	
 	inline BlockCollection(const hard::Cache& cache, int set)
-		: _cache(cache), _set(set), _cnt(0) { }
+		: _cache(cache), _set(set), _cnt(0), _nccnt(0) { }
 	
 	~BlockCollection() {
 		for(auto b: _map)
@@ -432,33 +425,46 @@ public:
 	inline const hard::Cache& cache() const { return _cache; }
 	inline int count() const { return _cnt; }
 
-	inline Address address(const Block *block) const {
+	inline Address address(const CacheBlock *block) const {
 		ASSERT(block->set() == _set);
 		return block->tag() << (_set + _cache.blockBits());
 	}
 	
-	const Block *at(Address a) const {
+	const CacheBlock *at(Address a) const {
 		if(int(_cache.set(a)) != _set)
 			return nullptr;
 		return _map.get(_cache.tag(a), nullptr);		
 	}
 	
-	const Block *add(int tag, const hard::Bank *bank) {
-		int id = -1;
-		if(bank->isCached())
-			id = _cnt++;
-		auto b = new Block(tag, _set, id, bank);
-		if(id >= 0)
-			blks.add(b);
+	const CacheBlock *add(int tag, const hard::Bank *bank) {
+		CacheBlock *b;
+		
+		// cached block
+		if(bank->isCached()) {
+			int id = _cnt++;
+			b = new CacheBlock(tag, _set, id, bank);
+			if(_nccnt == blks.length())
+				blks.add(b);
+			else
+				blks.add(blks[id]);
+			_nccnt++;
+		}
+		
+		// non-cached block
+		else
+			b = new CacheBlock(tag, _set, -1, bank);
 		_map.put(tag, b);
 		return b;
 	}
 	
+	const CacheBlock *block(int id) const {
+		return blks[id];
+	}
+	
 private:
-	Vector<Block *> blks;
+	Vector<CacheBlock *> blks;
 	const hard::Cache& _cache;
-	int _set;
-	int _cnt;
+	int _set, _cnt, _nccnt;
 	map_t _map;
 };
 
@@ -491,7 +497,7 @@ SetCollection::~SetCollection() {
  * Get the block number corresponding to the given address.
  * @return	Block or null.
  */
-const Block *SetCollection::at(Address a) {
+const CacheBlock *SetCollection::at(Address a) {
 	return _sets[_cache.set(a)]->at(a);
 }
 
@@ -500,7 +506,7 @@ const Block *SetCollection::at(Address a) {
  * @param a		Address of access to get block for.
  * @return		Block for the address.
  */
-const Block *SetCollection::add(Address a) {
+const CacheBlock *SetCollection::add(Address a) {
 	
 	// already recorded
 	int s = _cache.set(a);
@@ -533,6 +539,16 @@ int SetCollection::blockCount(int set) const {
 	return _sets[set]->count();
 }
 
+/**
+ * Get block corresponding to index i in the given set.
+ * @param set	Set of the block.
+ * @param id	ID of the block.
+ * @return		Corresponding block.
+ * @warning		Condition 0 <= id < blockCount(set) must be hold.
+ */
+const CacheBlock *SetCollection::block(int set, int id) const {
+	return _sets[set]->block(id);
+}
 
 /**
  * Get the address of a cache block from its index.
@@ -540,13 +556,13 @@ int SetCollection::blockCount(int set) const {
  * @param b		Block index.
  * @return		Address of the corresponding block.
  */
-Address SetCollection::address(const Block *block) const {
+Address SetCollection::address(const CacheBlock *block) const {
 	return _sets[block->set()]->address(block);
 }
 
 
 ///
-io::Output& operator<<(io::Output& out, const Block& b) {
+io::Output& operator<<(io::Output& out, const CacheBlock& b) {
 	out << "CB" << b.id() << " (set " << b.set() << ", tag " << b.tag()
 		<< ", " << b.bank()->name() << ")";
 	return out;
@@ -558,6 +574,115 @@ class Plugin: public ProcessorPlugin {
 public:
 	Plugin(void): ProcessorPlugin("otawa::dcache", Version(1, 0, 0), OTAWA_PROC_VERSION) { }
 };
+
+
+/**
+ * @class AgeInfo
+ * Provides information about a cache block age. Depending on the analysis
+ * providing it, this age may be maximum (MUST analysis), minimum
+ * (MAY analysis) or loop dependent age (persistence analysis).
+ * @ingroup dcache
+ */
+
+///
+AgeInfo::~AgeInfo() {
+}
+
+
+/**
+ * @fn int AgeInfo::wayCount();
+ * Get the number of ways of the cache.
+ */
+
+/**
+ * @fn  int AgeInfo::age(otawa::Block *b, const Access& a);
+ * Get the age of the accessed block.
+ * @param b	Block containing the access (must contain the access).
+ * @param a	Looked access.
+ * @return	Age of the accessed block.
+ */
+
+/**
+ * @fn int AgeInfo::age(Edge *e, const Access& a);
+ * Get the age of the accessed block when the flow pass by the
+ * given edge.
+ * @param e	Looked edge (sink block must contain the access).
+ * @param a	Concerned access.
+ * @return	Age of the accessed block.
+ */
+
+/**
+ * @fn ACS *AgeInfo::acsBefore(otawa::Block *b);
+ * Get the ACS before the block b.
+ * @param b	Looked block.
+ * @return	Corresponding ACS.
+ */
+
+/**
+ * @fn ACS *AgeInfo::acsAfter(otawa::Block *b);
+ * Provide the ACS after the block b.
+ * @param b		Block to get the
+ */
+
+/**
+ * Get the ACS before the execution of he edge
+ * i.e. after the execution of the source block of the edge.
+ * @param e	Looked edge.
+ * @param s	Looked cache set.
+ * @return	Corresponding ACS.
+ */
+ACS *AgeInfo::acsBefore(Edge *e, int s) {
+	return acsAfter(e->source(), s);
+}
+
+/**
+ * @fn ACS *AgeInfo::acsAfter(Edge *e);
+ * Get the ACS after the given edge i.e. after the execution of the block
+ * in the context of the edge.
+ * @param e		Looked edge.
+ * @return		Resulting ACS.
+ */
+
+
+/**
+ * @class GCState
+ * Class denoting a state that can be garbage collected: it provides a virtual
+ * mark() function allowing to mark the object as alive depending on its
+ * actual class.
+ * @ingroup dcache
+ */
+
+///
+GCState::~GCState() {
+}
+
+/**
+ * @fn void GCState::mark(ListGC& gc);
+ * Must be overloaded to provide custom marking of the actual class.
+ * @param gc	Current garbage collector.
+ */
+
+
+/**
+ * Compute the actual computable associativity for a cache according to:
+ * @param cache		Cache to evaluate.
+ * @return
+ * @ingroup dcache
+ */
+int actualAssoc(const hard::Cache& cache) {
+	switch(cache.replacementPolicy()) {
+	case hard::Cache::RANDOM:
+		return 1;
+	case hard::Cache::LRU:
+		return cache.wayCount();
+	case hard::Cache::FIFO:
+	case hard::Cache::MRU:
+	case hard::Cache::PLRU:
+	default:
+		ASSERT(false);
+		return 0;
+	}
+}
 
 } } // otawa::icat
 

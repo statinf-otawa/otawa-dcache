@@ -177,7 +177,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 				if(lb == hb)
 					accs.add(Access(inst, action, lb));
 				else {
-					Vector<const Block *> bs;
+					Vector<const CacheBlock *> bs;
 					for(auto a = _cache->round(l); true;
 					a = a + _cache->blockSize()) {
 						auto block = _coll->add(a);

@@ -30,5 +30,9 @@ foreach(TEST IN LISTS TESTS)
 	add_custom_target(test-${TEST}
 		DEPENDS "${TEST}.elf"
 		COMMAND "operform" "${TEST}.elf" ${OFLAGS}
-	)	
+	)
+	add_custom_target(test-must-${TEST}
+		DEPENDS "${TEST}.elf"
+		COMMAND "operform" "${TEST}.elf" ${OFLAGS} "require:otawa::dcache::MUST_FEATURE"
+	)
 endforeach()

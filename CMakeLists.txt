@@ -6,7 +6,10 @@ set(NAMESPACE	"otawa")
 set(FILES		)
 set(SOURCES
 	"dcache.cpp"
+	"dcache_ACS.cpp"
+	"dcache_Analysis.cpp"
 	"dcache_CLPAccessBuilder.cpp"
+	"dcache_MUST.cpp"
 )
 
 

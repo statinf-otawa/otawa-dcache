@@ -54,9 +54,9 @@ typedef enum kind_t: t::uint8 {
 } kind_t;
 
 
-class Block {
+class CacheBlock {
 public:
-	inline Block(int tag, int set, int id, const hard::Bank *bank)
+	inline CacheBlock(int tag, int set, int id, const hard::Bank *bank)
 		: _tag(tag), _set(set), _id(id), _bank(bank){ }
 	inline int tag() const { return _tag; }
 	inline int set() const { return _set; }
@@ -66,18 +66,18 @@ private:
 	int _tag, _set, _id;
 	const hard::Bank *_bank;
 };
-io::Output& operator<<(io::Output& out, const Block& b);
+io::Output& operator<<(io::Output& out, const CacheBlock& b);
 
 
-// Data
+// Access
 class Access: public PropList {
 public:
 	
 	Access();
 	Access(Inst *instruction, action_t action);
-	Access(Inst *instruction, action_t action, const Block *block);
+	Access(Inst *instruction, action_t action, const CacheBlock *block);
 	Access(Inst *instruction, action_t action, int fst, int lst);
-	Access(Inst *instruction, action_t action, const Vector<const Block *>& blocks);
+	Access(Inst *instruction, action_t action, const Vector<const CacheBlock *>& blocks);
 	Access(const Access& b);
 	~Access();
 	Access& operator=(const Access& a);
@@ -86,26 +86,19 @@ public:
 	inline kind_t kind() const { return _kind; }
 	inline bool isAny() const { return _kind == ANY; }
 	inline action_t action() const { return _action; }
-	inline const Block *block() const { ASSERT(_kind == BLOCK); return data.blk; }
+	inline const CacheBlock *block() const { ASSERT(_kind == BLOCK); return data.blk; }
 	inline int first() const
 		{ ASSERT(_kind == RANGE || _kind == ENUM); return data.range->fst; }
 	inline int last() const
 		{ ASSERT(_kind == RANGE || _kind == ENUM); return data.range->lst; }
-	inline bool inRange(const Block *block) const {
-		auto set = block->set();
-		if(first() <= last())
-			return first() <= set && set <= last();
-		else
-			return set <= last() || first() <= set;
-	}
 	bool access(int set) const;
-	bool access(const Block *block) const;
+	bool access(const CacheBlock *block) const;
 
 	void print(io::Output& out) const;
 
-	inline const Vector<const Block *>& blocks(void) const
+	inline const Vector<const CacheBlock *>& blocks(void) const
 		{ ASSERT(_kind == ENUM); return data.enm->bs; }
-	const Block *blockIn(int set) const;
+	const CacheBlock *blockIn(int set) const;
 
 private:
 	void clear();
@@ -119,10 +112,10 @@ private:
 		int fst, lst;
 	} range_t;
 	typedef struct enum_t: range_t {
-		Vector<const Block *> bs;		
+		Vector<const CacheBlock *> bs;		
 	} enum_t;
 	union {
-		const Block *blk;
+		const CacheBlock *blk;
 		range_t *range;
 		enum_t *enm;
 	} data;
@@ -137,11 +130,12 @@ class SetCollection {
 public:
 	SetCollection(const hard::Cache& cache, const hard::Memory& mem);
 	~SetCollection();
-	const Block *at(Address a);
-	const Block *add(Address a);
+	const CacheBlock *at(Address a);
+	const CacheBlock *add(Address a);
 	int setCount() const;
 	int blockCount(int set) const;
-	Address address(const Block *block) const;
+	const CacheBlock *block(int set, int id) const;
+	Address address(const CacheBlock *block) const;
 	
 	inline const hard::Cache& cache() const { return _cache; }
 private:
@@ -153,11 +147,27 @@ private:
 int actualAssoc(const hard::Cache& cache);
 
 
-// useful typedefs
 typedef Slice<FragTable<Access> > AccessList;
 extern p::id<AccessList> ACCESSES;
 extern p::interfaced_feature<const SetCollection> ACCESS_FEATURE;
 extern p::interfaced_feature<const SetCollection> CLP_ACCESS_FEATURE;
+
+
+// Age information
+class ACS;
+class AgeInfo {
+public:
+	virtual ~AgeInfo();
+	virtual int wayCount() = 0;
+	virtual int age(otawa::Block *v, const Access& a, const CacheBlock *b) = 0;
+	virtual int age(Edge *e, const Access& a, const CacheBlock *b) = 0;
+	virtual ACS *acsAfter(Block *b, int S) = 0;
+	ACS *acsBefore(Edge *e, int S);
+	virtual ACS *acsBefore(Block *b, int S) = 0;
+	virtual ACS *acsAfter(Edge *e, int S) = 0;
+	virtual void release(ACS *a) = 0;
+};
+extern p::interfaced_feature<AgeInfo> MUST_FEATURE;
 
 } }		// otawa::dcache
 
