@@ -9,6 +9,7 @@ set(SOURCES
 	"dcache_ACS.cpp"
 	"dcache_Analysis.cpp"
 	"dcache_CLPAccessBuilder.cpp"
+	"dcache_EventBuilder.cpp"
 	"dcache_MUST.cpp"
 )
 

@@ -111,7 +111,7 @@ namespace otawa { namespace dcache {
 /**
  * Build a null block access.
  */
-Access::Access(): inst(nullptr), _kind(ANY), _action(NO_ACCESS) {
+Access::Access(): _inst(nullptr), _kind(ANY), _action(NO_ACCESS) {
 }
 
 /**
@@ -120,7 +120,7 @@ Access::Access(): inst(nullptr), _kind(ANY), _action(NO_ACCESS) {
  * @param action		Type of action.
  */
 Access::Access(Inst *instruction, action_t action)
-: inst(instruction), _kind(ANY), _action(action) {
+: _inst(instruction), _kind(ANY), _action(action) {
 	ASSERT(instruction != nullptr);
 }
 
@@ -132,7 +132,7 @@ Access::Access(Inst *instruction, action_t action)
  * @param block			Accessed block.
  */
 Access::Access(Inst *instruction, action_t action, const CacheBlock *block)
-: inst(instruction), _kind(BLOCK), _action(action) {
+: _inst(instruction), _kind(BLOCK), _action(action) {
 	ASSERT(instruction != nullptr);
 	data.blk = block;
 }
@@ -147,7 +147,7 @@ Access::Access(Inst *instruction, action_t action, const CacheBlock *block)
  * @param last			Last access block (must a cache block boundary address).
  */
 Access::Access(Inst *instruction, action_t action, const Vector<const CacheBlock *>& blocks)
-: inst(instruction), _kind(ENUM), _action(action) {
+: _inst(instruction), _kind(ENUM), _action(action) {
 	ASSERT(instruction != nullptr);
 	data.enm = new enum_t;
 	data.enm->fst = blocks.first()->set();
@@ -181,7 +181,7 @@ void Access::clear() {
 
 ///
 void Access::set(const Access& a) {
-	inst = a.inst;
+	_inst = a._inst;
 	_kind = a._kind;
 	_action = a._action;
 	switch(_kind) {
@@ -270,7 +270,7 @@ Access& Access::operator=(const Access& a) {
 /**
  */
 void Access::print(io::Output& out) const {
-	out << inst->address() << " (" << inst << "): "
+	out << _inst->address() << " (" << _inst << "): "
 		<< action_t(_action) << " @ ";
 	switch(_kind) {
 	case ANY:
@@ -683,6 +683,10 @@ int actualAssoc(const hard::Cache& cache) {
 		return 0;
 	}
 }
+
+
+p::interfaced_feature<AgeInfo> MAY_FEATURE("otawa::dcache::MAY_FEATURE", p::make<NoProcessor>());
+p::interfaced_feature<AgeInfo> PERS_FEATURE("otawa::dcache::PERS_FEATURE", p::make<NoProcessor>());
 
 } } // otawa::icat
 

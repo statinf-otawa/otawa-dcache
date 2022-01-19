@@ -82,7 +82,7 @@ public:
 	~Access();
 	Access& operator=(const Access& a);
 
-	inline Inst *instruction() const { return inst; }
+	inline Inst *inst() const { return _inst; }
 	inline kind_t kind() const { return _kind; }
 	inline bool isAny() const { return _kind == ANY; }
 	inline action_t action() const { return _action; }
@@ -104,7 +104,7 @@ private:
 	void clear();
 	void set(const Access& a);
 
-	Inst *inst;
+	Inst *_inst;
 	kind_t _kind;
 	action_t _action;
 
@@ -168,6 +168,28 @@ public:
 	virtual void release(ACS *a) = 0;
 };
 extern p::interfaced_feature<AgeInfo> MUST_FEATURE;
+extern p::interfaced_feature<AgeInfo> MAY_FEATURE;
+extern p::interfaced_feature<AgeInfo> PERS_FEATURE;
+
+
+// categories
+typedef enum {
+	NO_CAT = 0,
+	AH = 1,
+	AM = 2,
+	PE = 3,
+	NC = 4,
+	CAT_CNT = 5
+} category_t;
+io::Output& operator<<(io::Output& out, category_t c);
+
+extern p::id<category_t> CATEGORY;
+extern p::id<Block *> RELATIVE_TO;
+extern p::feature CATEGORY_FEATURE;
+
+
+// events
+extern p::feature EVENT_FEATURE;
 
 } }		// otawa::dcache
 
