@@ -60,8 +60,9 @@ target_link_libraries	("${PLUGIN}" "${TARGET_LIB}" "${OTAWA_LDFLAGS}")
 
 
 # installation
-install(TARGETS	"${PLUGIN}"		LIBRARY DESTINATION "${OTAWA_PLUGDIR}/${NAMESPACE}")
-install(FILES	"${PLUGIN}.eld"	DESTINATION 		"${OTAWA_PLUGDIR}/${NAMESPACE}")
+install(TARGETS		"${PLUGIN}"		LIBRARY DESTINATION "${OTAWA_PLUGDIR}/${NAMESPACE}")
+install(FILES		"${PLUGIN}.eld"	DESTINATION 		"${OTAWA_PLUGDIR}/${NAMESPACE}")
+install(DIRECTORY	"otawa"			DESTINATION			"${OTAWA_PREFIX}/include")
 
 # tests
 if(WITH_TEST)
