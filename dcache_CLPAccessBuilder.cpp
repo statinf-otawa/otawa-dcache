@@ -142,7 +142,9 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 				if(b == nullptr)
 					throw otawa::Exception(_ << "no memory bank for address "
 						<< Address(a) << " accessed from " << inst->address());
-				if(b->id() < 0) {
+				if(action == STORE && !_cache->doesWriteAllocate())
+					action = asDirect(action);
+				else if(b->id() < 0) {
 					if(logFor(LOG_INST))
 						log << "\t\t\t" << action << " at " << inst->address()
 							<< " is not cached!\n";
@@ -174,6 +176,8 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 						log << "\t\t\t" << action << " at " << inst->address()
 							<< " is not cached!\n";
 				}
+				if(action == STORE && !_cache->doesWriteAllocate())
+					action = asDirect(action);
 				if(lb == hb)
 					accs.add(Access(inst, action, lb));
 				else {

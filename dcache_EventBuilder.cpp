@@ -38,7 +38,12 @@ namespace otawa { namespace dcache {
 class Event: public otawa::Event {
 public:
 	
-	Event(const Access& a, ot::time c, occurrence_t o, const ilp::Expression& xs):
+	Event(
+		const Access& a,
+	   ot::time c,
+	   occurrence_t o,
+	   const ilp::Expression& xs = ilp::Expression::null
+	):
 		otawa::Event(a.inst()),
 		_acc(a),
 		_cost(c),
@@ -249,7 +254,30 @@ protected:
 		// build the event
 		return new Event(a, t, o, xs);
 	}
-			
+	
+	Event *processDirect(Edge *e, const Access& a) {
+		ot::time t = 0;
+		const hard::Bank *bank;
+		switch(a.kind()) {
+		case ANY:
+		case RANGE:
+			t = a.action() == DIRECT_LOAD ? mem->worstReadTime() : mem->worstWriteTime();
+			break;
+		case BLOCK:
+			bank = a.block()->bank();
+			t = a.action() == DIRECT_LOAD ? bank->readLatency() : bank->writeLatency();
+			break;
+		case ENUM:
+			bank = a.blocks()[0]->bank();
+			t = a.action() == DIRECT_LOAD ? bank->readLatency() : bank->writeLatency();
+			break;
+		default:
+			ASSERT(false);
+			break;
+		}
+		return new Event(a, t, Event::ALWAYS);
+	}
+	
 	void processAccess(Edge *e, const Access& a) {
 		Event *evt = nullptr;
 
@@ -260,7 +288,9 @@ protected:
 
 		case DIRECT_LOAD:
 		case DIRECT_STORE:
-
+			evt = processDirect(e, a);
+			break;
+			
 		case PURGE:
 			return;
 

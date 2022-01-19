@@ -4,5 +4,7 @@
 		<block_bits>4</block_bits>
 		<way_bits>2</way_bits>
 		<set_bits>12</set_bits>
+		<write>WRITE_BACK</write>
+		<allocate>true</allocate>
 	</dcache>
 </cache-config>

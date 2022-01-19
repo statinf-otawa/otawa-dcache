@@ -370,10 +370,12 @@ const CacheBlock *Access::blockIn(int set) const {
 ///
 io::Output& operator<<(io::Output& out, action_t action) {
 	static cstring action_names[] = {
-		"none",		// NONE = 0
-		"load",		// READ = 1
-		"store",	// WRITE = 2
-		"purge"		// PURGE = 3
+		"none",			// NONE = 0
+		"load",			// READ = 1
+		"store",		// WRITE = 2
+		"purge",		// PURGE = 3
+		"direct-load",	// DIRECT_LOAD = 4,
+		"direct-store"	// DIRECT_STORE = 5
 	};
 	out << action_names[action];
 	return out;
