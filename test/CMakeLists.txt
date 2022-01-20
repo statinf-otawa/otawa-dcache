@@ -6,7 +6,7 @@ set(OFLAGS
 	"require:otawa::dcache::CLP_ACCESS_FEATURE"
 	"-P" "--dump"
 	"--add-prop" "otawa::CACHE_CONFIG_PATH=cache-16-4-12.xml"
-	"-v"
+#	"-v"
 )
 
 set(TESTS
@@ -44,4 +44,15 @@ foreach(TEST IN LISTS TESTS)
 		DEPENDS "${TEST}.elf"
 		COMMAND "operform" "${TEST}.elf" ${OFLAGS} "require:otawa::dcache::PERS_FEATURE"
 	)
+
+	add_custom_target(test-multi-${TEST}
+		DEPENDS "${TEST}.elf"
+		COMMAND "operform" "${TEST}.elf" ${OFLAGS} "require:otawa::dcache::MULTI_PERS_FEATURE"
+	)
+
+	add_custom_target(test-may-${TEST}
+		DEPENDS "${TEST}.elf"
+		COMMAND "operform" "${TEST}.elf" ${OFLAGS} "require:otawa::dcache::MAY_FEATURE"
+	)
+
 endforeach()

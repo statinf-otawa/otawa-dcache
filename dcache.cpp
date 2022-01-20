@@ -687,7 +687,87 @@ int actualAssoc(const hard::Cache& cache) {
 }
 
 
-p::interfaced_feature<AgeInfo> MAY_FEATURE("otawa::dcache::MAY_FEATURE", p::make<NoProcessor>());
+/**
+ * @class MultiAgeInfo
+ *
+ * This feature interface provides multi-age ACS, MultiACS, that is ACS
+ * with different evolutions depending on the loop level.
+ *
+ * This interface is currently provided by MULTI_PERS_FEATURE.
+ *
+ * @ingroup dcache
+ */
+
+///
+MultiAgeInfo::~MultiAgeInfo() {
+}
+
+/**
+ * @fn int MultiAgeInfo::wayCount();
+ * Get the number of ways in the cache.
+ * @return	Number of ways.
+ */
+
+/**
+ * @fn int MultiAgeInfo::age(Block *b, const Access& a);
+ * Get the age of the given access in the loop containing the access.
+ * @param b		BB containing the access.
+ * @param a		Concerned access.
+ * @return		Age of access a in the parent loop.
+ */
+
+/**
+ * @fn int MultiAgeInfo::age(Edge *e, const Access& a);
+ * Get the age of the given access in the loop containing the access after
+ * the given edge execution.
+ * @param e		Edge leading to the access.
+ * @param a		Concerned access.
+ * @return		Age of access a in the parent loop.
+ */
+
+/**
+ * @fn MultiAgeInfo::MultiACS *acsAfter(Block *b, int s);
+ * Get the multi-ACS after the BB b for set s. The obtained multi-ACS
+ * must be fried by a call to release().
+ * @param b		BB to look to ACS after.
+ * @param s		Concerned cache set.
+ * @return		Multi-ACS after BB b.
+ */
+
+/**
+ * @fn MultiAgeInfo::MultiACS *acsBefore(Edge *e, int s);
+ * Get the multi-ACS before the edge e for set s. The obtained multi-ACS
+ * must be fried by a call to release().
+ * @param e		Edge to look to ACS before.
+ * @param s		Concerned cache set.
+ * @return		Multi-ACS before edge e.
+ */
+
+/**
+ * @fn MultiAgeInfo::MultiACS *acsBefore(Block *b, int s);
+ * Get the multi-ACS before the BB b for set s. The obtained multi-ACS
+ * must be fried by a call to release().
+ * @param b		BB to look to ACS before.
+ * @param s		Concerned cache set.
+ * @return		Multi-ACS before BB b.
+ */
+
+/**
+ * @fn MultiAgeInfo::MultiACS *acsAfter(Edge *e, int s);
+ * Get the multi-ACS after the edge e for set s. The obtained multi-ACS
+ * must be fried by a call to release().
+ * @param e		Edge to look to ACS after.
+ * @param s		Concerned cache set.
+ * @return		Multi-ACS after edge e.
+ */
+
+/**
+ * @fn MultiAgeInfo::void release(MultiACS *a);
+ * Release the passed ACS to be fried. Must be called with ACS provided by
+ * acsBefore() and acsAfter().
+ * @param a		ACS to release.
+ */
+
 
 } } // otawa::dcache
 

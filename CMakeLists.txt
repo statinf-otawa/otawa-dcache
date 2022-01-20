@@ -10,6 +10,8 @@ set(SOURCES
 	"dcache_Analysis.cpp"
 	"dcache_CLPAccessBuilder.cpp"
 	"dcache_EventBuilder.cpp"
+	"dcache_MultiPERS.cpp"
+	"dcache_MAY.cpp"
 	"dcache_MUST.cpp"
 	"dcache_PERS.cpp"
 )

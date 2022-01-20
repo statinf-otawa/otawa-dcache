@@ -172,6 +172,24 @@ extern p::interfaced_feature<AgeInfo> MAY_FEATURE;
 extern p::interfaced_feature<AgeInfo> PERS_FEATURE;
 
 
+// MultiAgeInfo information
+class MultiACS;
+class MultiAgeInfo {
+public:
+	virtual ~MultiAgeInfo();
+	virtual int wayCount() = 0;
+	virtual int level(Block *b, const Access& a, const CacheBlock *cb) = 0;
+	virtual int level(Edge *e, const Access& a, const CacheBlock *cb) = 0;
+	virtual MultiACS *acsAfter(Block *b,int s) = 0;
+	virtual MultiACS *acsBefore(Edge *e, int s) = 0;
+	virtual MultiACS *acsBefore(Block *b, int s) = 0;
+	virtual MultiACS *acsAfter(Edge *e, int s) = 0;
+	virtual void release(MultiACS *a) = 0;
+};
+
+extern p::interfaced_feature<MultiAgeInfo> MULTI_PERS_FEATURE;
+
+
 // categories
 typedef enum {
 	NO_CAT = 0,
