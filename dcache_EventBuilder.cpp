@@ -133,10 +133,10 @@ protected:
 		}
 
 		// get multi-PERS analysis
-		/*if(ws->provides(MULTI_PERS_FEATURE)) {
+		if(ws->provides(MULTI_PERS_FEATURE)) {
 			mpers = MULTI_PERS_FEATURE.get(ws);
 			ASSERT(mpers != nullptr);
-		}*/
+		}
 		
 		// get the memory
 		mem = hard::MEMORY_FEATURE.get(ws);
@@ -153,10 +153,10 @@ protected:
 			return t(Event::NEVER, nullptr);
 
 		// PE?
-		/*else if(mpers != nullptr) {
-			auto n = mpers->level(e, a);
+		else if(mpers != nullptr) {
+			Block *h;
+			auto n = mpers->level(e, a, cb);
 			if(n != 0) {
-				evt->addOcc(Event::SOMETIMES);
 				auto l = Loop::of(e->sink());
 				for(int i = 1; i < n; i++) {
 					if(!l->isTop())
@@ -167,37 +167,30 @@ protected:
 						break;
 				}
 				if(l->isTop())
-					evt->addOver(*l->cfg()->entry()->outEdges().begin());
+					h = l->cfg()->entry()->outEdges().begin()->sink();
 				else
-					for(auto ee: l->entries())
-						evt->addOver(ee);
-				is_nc = false;
-				continue;
+					h = l->header();
+				return t(Event::SOMETIMES, h);
 			}
-		}*/
+		}
 			
 		// PE?
-		/*if(pers != nullptr && pers->age(e, a) < A) {
-			evt->addOcc(Event::SOMETIMES);
+		if(pers != nullptr && pers->age(e, a, cb) < A) {
 			auto l = Loop::of(e->sink());
 			if(!l->isTop())
 				while(!l->parent()->isTop())
 					l = l->parent();
+			Block *h;
 			if(l->isTop())
-				evt->addOver(*l->cfg()->entry()->outEdges().begin());
+				h = l->cfg()->entry()->outEdges().begin()->sink();
 			else
-				for(auto ee: l->entries())
-					evt->addOver(ee);
-			is_nc = false;
-			continue;
-		}*/
+				h = l->header();
+			return t(Event::SOMETIMES, h);
+		}
 			
 		// AM?
-		/*if(may != nullptr && may->age(e, a) >= A) {
-			evt->addOcc(Event::ALWAYS);
-			evt->addOver(e);
-			is_nc = false;
-		}*/
+		if(may != nullptr && may->age(e, a, cb) >= A)
+			return t(Event::NEVER, nullptr);
 			
 		// NOT-CLASSIFIED
 		else
@@ -336,7 +329,7 @@ protected:
 private:
 
 	AgeInfo *must, *may, *pers;
-	//MultiAgeInfo *mpers;
+	MultiAgeInfo *mpers;
 	const hard::Memory *mem;
 	int A;
 	int cnt[CAT_CNT];
