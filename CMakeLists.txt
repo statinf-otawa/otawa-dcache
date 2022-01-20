@@ -11,6 +11,7 @@ set(SOURCES
 	"dcache_CLPAccessBuilder.cpp"
 	"dcache_EventBuilder.cpp"
 	"dcache_MUST.cpp"
+	"dcache_PERS.cpp"
 )
 
 

@@ -688,7 +688,6 @@ int actualAssoc(const hard::Cache& cache) {
 
 
 p::interfaced_feature<AgeInfo> MAY_FEATURE("otawa::dcache::MAY_FEATURE", p::make<NoProcessor>());
-p::interfaced_feature<AgeInfo> PERS_FEATURE("otawa::dcache::PERS_FEATURE", p::make<NoProcessor>());
 
 } } // otawa::dcache
 
