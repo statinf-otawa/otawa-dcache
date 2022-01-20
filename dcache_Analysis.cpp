@@ -44,7 +44,7 @@ namespace otawa { namespace dcache {
  */
 
 ///
-p::declare Analysis::reg = p::init("otawa::icat::Analysis", Version(1, 0, 0))
+p::declare Analysis::reg = p::init("otawa::dcache::Analysis", Version(1, 0, 0))
 	.require(dcache::ACCESS_FEATURE)
 	.require(otawa::COLLECTED_CFG_FEATURE);
 
@@ -53,7 +53,7 @@ p::declare Analysis::reg = p::init("otawa::icat::Analysis", Version(1, 0, 0))
  * This property is a configuration of Analysis. It selects which sets are processed
  * (multiple combinations accepted).
  */
-p::id<int> ONLY_SET("otawa::icat::ONLY_SET");
+p::id<int> ONLY_SET("otawa::dcache::ONLY_SET");
 
 
 ///
@@ -303,7 +303,7 @@ void Analysis::processWorkSpace(WorkSpace *ws) {
  * @class Domain
  * Domain implementation for states supported by Analysis.
  *
- * @ingroup icat
+ * @ingroup dcache
  */
 
 ///

@@ -121,7 +121,7 @@ p::interfaced_feature<AgeInfo> MUST_FEATURE("otawa::dcache::MUST_FEATURE", p::ma
 /**
  * @class MUST
  * Provides the implementation of the domain for the MUST analysis.
- * @ingroup icat
+ * @ingroup dcache
  */
 
 ///

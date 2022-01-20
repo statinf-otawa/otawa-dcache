@@ -1,5 +1,5 @@
 /*
- *	icat plugin hook
+ *	dcache plugin hook
  *
  *	This file is part of OTAWA
  *	Copyright (c) 2020, IRIT UPS.
@@ -690,7 +690,7 @@ int actualAssoc(const hard::Cache& cache) {
 p::interfaced_feature<AgeInfo> MAY_FEATURE("otawa::dcache::MAY_FEATURE", p::make<NoProcessor>());
 p::interfaced_feature<AgeInfo> PERS_FEATURE("otawa::dcache::PERS_FEATURE", p::make<NoProcessor>());
 
-} } // otawa::icat
+} } // otawa::dcache
 
 otawa::dcache::Plugin otawa_dcache;
 ELM_PLUGIN(otawa_dcache, OTAWA_PROC_HOOK);

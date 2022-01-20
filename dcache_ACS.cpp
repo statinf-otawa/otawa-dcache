@@ -26,7 +26,7 @@ namespace otawa { namespace dcache {
 /**
  * @class ACS
  * Represents an abstract cache state.
- * @ingroup icat
+ * @ingroup dcache
  */
 
 /**
@@ -111,7 +111,7 @@ void ACS::mark(AbstractGC& gc) {
 /**
  * @class ACSDomain
  * A domain providing basic services to manage ACS.
- * @ingroup icat
+ * @ingroup dcache
  */
 
 ///

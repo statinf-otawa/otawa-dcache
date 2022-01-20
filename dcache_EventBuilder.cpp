@@ -346,7 +346,7 @@ private:
 
 
 ///
-p::declare EventBuilder::reg = p::init("otawa::icat::EventBuilder", Version(1, 0, 0))
+p::declare EventBuilder::reg = p::init("otawa::dcache::EventBuilder", Version(1, 0, 0))
 	.require(MUST_FEATURE)
 	.require(EXTENDED_LOOP_FEATURE)
 	.require(hard::MEMORY_FEATURE)
@@ -366,7 +366,7 @@ p::declare EventBuilder::reg = p::init("otawa::icat::EventBuilder", Version(1, 0
  * Properties:
  *  @ref otawa::EVENT
  * 
- * Default implementation: @ref otawa::icat::EventBuilder
+ * Default implementation: @ref otawa::dcache::EventBuilder
  * 
  * @ingroup dcache
  */
