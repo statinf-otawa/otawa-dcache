@@ -27,7 +27,7 @@ foreach(TEST IN LISTS TESTS)
 		ARGS ${CFLAGS} "${TEST}.s" -o "${TEST}.elf"
 		MAIN_DEPENDENCY "${TEST}.s"
 	)
-	add_custom_target(test-${TEST}
+	add_custom_target(test-access-${TEST}
 		DEPENDS "${TEST}.elf"
 		COMMAND "operform" "${TEST}.elf" ${OFLAGS}
 	)

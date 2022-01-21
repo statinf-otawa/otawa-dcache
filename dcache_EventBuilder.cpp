@@ -64,7 +64,7 @@ public:
 		return buf.toString();
 	}
 
-	kind_t kind() const override { return FETCH; }
+	kind_t kind() const override { return MEM; }
 	ot::time cost() const override { return _cost; }
 	occurrence_t occurrence() const override { return _occ; }
 	inline const Access& access() const { return _acc; }
