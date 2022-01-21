@@ -126,9 +126,15 @@ p::interfaced_feature<AgeInfo> MAY_FEATURE("otawa::dcache::MAY_FEATURE", p::make
 
 ///
 MAY::MAY(const SetCollection& collection, int set, int assoc, ListGC& gc):
-	ACSDomain(collection, set, assoc, 0, gc)
+	ACSDomain(collection, set, assoc, 0, gc),
+	EMPTY(make(0))
 {
 	ASSERT(A > 0);
+}
+
+///
+ai::State *MAY::entry() {
+	return EMPTY;
 }
 
 ///
@@ -166,6 +172,8 @@ ai::State *MAY::update(Edge *e, ai::State *s) {
 ai::State *MAY::update(const Access& a, ai::State *s_) {
 	auto s = acs(s_);
 	if(!a.access(S))
+		return s;
+	if(s == BOT)
 		return s;
 
 	switch(a.action()) {

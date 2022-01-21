@@ -166,6 +166,8 @@ ai::State *MUST::update(const Access& a, ai::State *s_) {
 	auto s = acs(s_);
 	if(!a.access(S))
 		return s;
+	if(s == BOT)
+		return s;
 
 	switch(a.action()) {
 

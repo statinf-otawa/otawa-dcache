@@ -31,6 +31,7 @@ public:
 
 	MAY(const SetCollection& coll, int set, int assoc, ListGC& gc);
 
+	ai::State *entry() override;
 	ai::State *join(ai::State *s1, ai::State *s2) override;
 	ai::State *update(Edge *e, ai::State *s) override;
 	ai::State *update(const Access& a, ai::State *s) override;
@@ -38,6 +39,9 @@ public:
 	ACS *access(ACS *s, int b);
 	ACS *purge(ACS *s, int b);
 	ACS *accessAny(ACS *s);
+
+private:
+	ACS *EMPTY;
 };
 
 } }		// otawa::dcache

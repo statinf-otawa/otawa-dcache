@@ -6,7 +6,7 @@ set(OFLAGS
 	"require:otawa::dcache::CLP_ACCESS_FEATURE"
 	"-P" "--dump"
 	"--add-prop" "otawa::CACHE_CONFIG_PATH=cache-16-4-12.xml"
-#	"-v"
+	"-v"
 )
 set(EVENT_FLAGS
 	${OFLAGS}
