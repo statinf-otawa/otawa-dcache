@@ -99,7 +99,7 @@ public:
 		must(nullptr),
 		may(nullptr),
 		pers(nullptr),
-		//mpers(nullptr),
+		mpers(nullptr),
 		mem(nullptr),
 		A(0)
 	{

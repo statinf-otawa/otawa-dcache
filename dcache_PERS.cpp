@@ -150,7 +150,7 @@ ai::State *PERS::join(ai::State *_1, ai::State *_2) {
 		return s1;
 	else {
 		auto s = make(N);
-		int cnt = 0, sum;
+		int cnt = 0, sum = 0;
 		for(int i = 0; i < N; i++) {
 			if(s1->age[i] == ACS::BOT)
 				s->age[i] = s2->age[i];
@@ -172,17 +172,17 @@ ai::State *PERS::join(ai::State *_1, ai::State *_2) {
 ///
 ai::State *PERS::update(Edge *e, ai::State *s) {
 	auto os = acs(s);
-	for(const auto& a: *ACCESSES(e->sink()))
-		if(a.access(S))
-			os = acs(update(a, os));
+	if(os != BOT) {
+		for(const auto& a: *ACCESSES(e->sink()))
+			if(a.access(S))
+				os = acs(update(a, os));
+	}
 	return os;
 }
 
 ///
 ai::State *PERS::update(const Access& a, ai::State *s_) {
 	auto s = acs(s_);
-	if(!a.access(S))
-		return s;
 
 	switch(a.action()) {
 
@@ -218,8 +218,6 @@ ai::State *PERS::update(const Access& a, ai::State *s_) {
 
 ///
 ACS *PERS::access(ACS *is, int b) const {
-	if(is == BOT)
-		return is;
 	auto os = make(N);
 	auto ba = is->age[b];
 	if(ba == ACS::BOT)
@@ -245,8 +243,8 @@ ACS *PERS::purge(ACS *is, int b) const {
 ACS *PERS::accessAny(ACS *is) const {
 	auto os = make(N);
 	for(int i = 0; i < N; i++)
-		if(os->age[i] != ACS::BOT)
-			os->age[i] = max(int(A), is->age[i] + 1);
+		if(is->age[i] != ACS::BOT)
+			os->age[i] = min(int(A), is->age[i] + 1);
 		else
 			os->age[i] = is->age[i];
 	return os;

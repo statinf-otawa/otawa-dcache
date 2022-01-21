@@ -8,6 +8,12 @@ set(OFLAGS
 	"--add-prop" "otawa::CACHE_CONFIG_PATH=cache-16-4-12.xml"
 #	"-v"
 )
+set(EVENT_FLAGS
+	${OFLAGS}
+	"require:otawa::dcache::MULTI_PERS_FEATURE"
+	"require:otawa::dcache::MAY_FEATURE"
+	"require:otawa::dcache::EVENT_FEATURE"
+)
 
 set(TESTS
 	"singlevar"
@@ -19,6 +25,9 @@ set(TESTS
 list(TRANSFORM TESTS APPEND ".elf" OUTPUT_VARIABLE ELVES)
 add_custom_target(elfves ALL DEPENDS ${ELVES})
 
+add_custom_target(test-options
+	COMMAND "echo" ${EVENT_FLAGS}
+)
 
 foreach(TEST IN LISTS TESTS)
 	add_custom_command(
@@ -53,10 +62,7 @@ foreach(TEST IN LISTS TESTS)
 
 	add_custom_target(test-event-${TEST}
 		DEPENDS "${TEST}.elf"
-		COMMAND "operform" "${TEST}.elf" ${OFLAGS}
-			"require:otawa::dcache::MULTI_PERS_FEATURE"
-			"require:otawa::dcache::MAY_FEATURE"
-			"require:otawa::dcache::EVENT_FEATURE"
+		COMMAND "operform" "${TEST}.elf" ${EVENT_FALGS}
 	)
-
+	
 endforeach()
