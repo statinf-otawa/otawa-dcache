@@ -22,7 +22,7 @@
 #define OTAWA_DCACHE_ACS_H_
 
 #include <elm/alloc/ListGC.h>
-#include <otawa/dcache/Analysis.h>
+#include "Analysis.h"
 #include "features.h"
 
 namespace otawa { namespace dcache {

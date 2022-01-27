@@ -19,7 +19,7 @@
  *	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <otawa/dcache/Analysis.h>
+#include "otawa/dcache/Analysis.h"
 
 namespace otawa { namespace dcache {
 
