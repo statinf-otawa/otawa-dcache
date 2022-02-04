@@ -21,8 +21,8 @@
 
 #include <elm/array.h>
 #include <elm/data/ListMap.h>
-#include <otawa/dcache/Analysis.h>
-#include <otawa/dcache/MUST.h>
+#include "otawa/dcache/Analysis.h"
+#include "otawa/dcache/MUST.h"
 
 namespace otawa { namespace dcache {
 
