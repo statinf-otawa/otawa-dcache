@@ -74,10 +74,15 @@ class Access: public PropList {
 public:
 	
 	Access();
-	Access(Inst *instruction, action_t action);
-	Access(Inst *instruction, action_t action, const CacheBlock *block);
-	Access(Inst *instruction, action_t action, int fst, int lst);
-	Access(Inst *instruction, action_t action, const Vector<const CacheBlock *>& blocks);
+	Access(Inst *instruction, action_t action, sem::type_t type = sem::NO_TYPE,
+		int index = -1);
+	Access(Inst *instruction, action_t action, const CacheBlock *block,
+		sem::type_t type = sem::NO_TYPE, int index = -1);
+	Access(Inst *instruction, action_t action, int fst, int lst,
+		sem::type_t type = sem::NO_TYPE, int index = -1);
+	Access(Inst *instruction, action_t action,
+		const Vector<const CacheBlock *>& blocks,
+		sem::type_t type = sem::NO_TYPE, int index = -1);
 	Access(const Access& b);
 	~Access();
 	Access& operator=(const Access& a);
@@ -93,7 +98,9 @@ public:
 		{ ASSERT(_kind == RANGE || _kind == ENUM); return data.range->lst; }
 	bool access(int set) const;
 	bool access(const CacheBlock *block) const;
-
+	sem::type_t type() const { return sem::type_t(_type); }
+	int index() const { return _index; }
+	
 	void print(io::Output& out) const;
 
 	inline const Vector<const CacheBlock *>& blocks(void) const
@@ -107,6 +114,8 @@ private:
 	Inst *_inst;
 	kind_t _kind;
 	action_t _action;
+	t::uint8 _type;
+	t::uint8 _index;
 
 	typedef struct range_t {
 		int fst, lst;

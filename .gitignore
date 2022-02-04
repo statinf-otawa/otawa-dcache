@@ -13,3 +13,7 @@ Makefile
 .kdev4
 otawa-dcache.kdev4
 
+# Doxygen
+Doxyfile
+Doxyerror.log
+autodoc

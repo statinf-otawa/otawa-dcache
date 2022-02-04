@@ -133,7 +133,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 
 			// access to T
 			if(addr.isAll())
-				accs.add(Access(inst, action));
+				accs.add(Access(inst, action, buf[i].type(), buf[i].memIndex()));
 
 			// constant access
 			else if(addr.isConst()) {
@@ -150,13 +150,13 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 							<< " is not cached!\n";
 					action = asDirect(action);
 				}
-				accs.add(Access(inst, action, b));
+				accs.add(Access(inst, action, b, buf[i].type(), buf[i].memIndex()));
 			}
 
 			// range too big
 			else if(addr.isInf()
 			|| _cache->countBlocks(addr.start(), addr.stop()) >= _cache->setCount())
-				accs.add(Access(inst, action));
+				accs.add(Access(inst, action, buf[i].type(), buf[i].memIndex()));
 			
 			// range access
 			else {
@@ -179,7 +179,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 				if(action == STORE && !_cache->doesWriteAllocate())
 					action = asDirect(action);
 				if(lb == hb)
-					accs.add(Access(inst, action, lb));
+					accs.add(Access(inst, action, lb, buf[i].type(), buf[i].memIndex()));
 				else {
 					Vector<const CacheBlock *> bs;
 					for(auto a = _cache->round(l); true;
@@ -189,7 +189,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 						if(a == _cache->round(h))
 							break;
 					}
-					accs.add(Access(inst, action, bs));
+					accs.add(Access(inst, action, bs, buf[i].type(), buf[i].memIndex()));
 				}
 			}
 		}

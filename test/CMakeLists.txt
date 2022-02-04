@@ -4,7 +4,7 @@ set(CFLAGS "-static")
 set(OFLAGS
 	"require:otawa::clp::FILTER_FEATURE"
 	"require:otawa::dcache::CLP_ACCESS_FEATURE"
-	"-P" "--dump"
+	"--dump"
 	"--add-prop" "otawa::CACHE_CONFIG_PATH=cache-16-4-12.xml"
 	"-v"
 )
@@ -20,6 +20,7 @@ set(TESTS
 	"array"
 	"pointer"
 	"pointer2"
+	"multitop"
 )
 
 list(TRANSFORM TESTS APPEND ".elf" OUTPUT_VARIABLE ELVES)
@@ -62,7 +63,7 @@ foreach(TEST IN LISTS TESTS)
 
 	add_custom_target(test-event-${TEST}
 		DEPENDS "${TEST}.elf"
-		COMMAND "operform" "${TEST}.elf" ${EVENT_FALGS}
+		COMMAND "operform" "${TEST}.elf" ${EVENT_FLAGS}
 	)
 	
 endforeach()

@@ -143,6 +143,9 @@ protected:
 		
 		// get the system
 		sys = ipet::SYSTEM(ws);
+		
+		// get the cache
+		cache = &ACCESS_FEATURE.get(ws)->cache();
 	}
 
 	typedef Pair<Event::occurrence_t, Block *> t;
@@ -197,16 +200,51 @@ protected:
 			return t(Event::SOMETIMES, nullptr);
 	}
 
-	Event *processAny(Edge *e, const Access &a) {
-		ot::time t;
-		if(a.action() == LOAD)
-			t = mem->worstReadTime();
-		else
-			t = mem->worstWriteTime();
-		return new Event(a, t, Event::SOMETIMES, ilp::Expression::null);
+	ot::time worstAccessTime(const Access& a) {
+		switch(a.action()) {
+		case LOAD:
+		case DIRECT_LOAD:		
+			return mem->worstReadTime();
+		case STORE:
+		case DIRECT_STORE:
+			return mem->worstWriteTime();
+		case NO_ACCESS:
+		case PURGE:
+			return 0;
+		}
+		return -1;
 	}
 	
+	Event *processAny(Edge *e, const Access &a) {
+		return new Event(
+			a,
+			worstAccessTime(a),
+			Event::SOMETIMES,
+			ilp::Expression::null);
+	}
 
+	/**
+	 * Process a multiple-instruction with T address.
+	 * @param e		Current edge.
+	 * @param a		Access to build event for.
+	 */
+	void processMultiTop(Edge *e, const Access& a) {
+		if(logFor(LOG_BLOCK))
+			log << "\t\t\tusing special multi-access to T at "
+				<< a.inst()->address() << io::endl;
+		// TO FIX
+		auto access_size = sem::size(a.type());
+		if(access_size == 0)
+			access_size = 4;
+		auto size = a.inst()->multiCount() * access_size;
+		int cnt = ((size + cache->blockSize() - 1) >> cache->blockBits()) + 1;
+		// TO FIX: not really worst case
+		ot::time t = worstAccessTime(a);
+		for(int i = 0; i < cnt; i++)
+			EVENT(e).add(
+				new Event(a, t,	Event::SOMETIMES, ilp::Expression::null));
+	}
+	
 	Event *processBlock(Edge *e, const Access& a) {
 		auto cb = a.block();
 		auto bank = cb->bank();
@@ -254,7 +292,7 @@ protected:
 		switch(a.kind()) {
 		case ANY:
 		case RANGE:
-			t = a.action() == DIRECT_LOAD ? mem->worstReadTime() : mem->worstWriteTime();
+			t = worstAccessTime(a);
 			break;
 		case BLOCK:
 			bank = a.block()->bank();
@@ -270,14 +308,24 @@ protected:
 		}
 		return new Event(a, t, Event::ALWAYS);
 	}
-	
-	void processAccess(Edge *e, const Access& a) {
+
+	/**
+	 * Build events for the given access. There is a specific optimization 
+	 * for multiple access instruction to T address: as the accesses are considered
+	 * as sequential, the number of NC events is: roundup(access size * access/
+	 * block size) to the worst case time. Subsequent accesses in the same
+	 * instruction can be ignored in this case.
+	 * @param e		Current edge.
+	 * @param a		Access to build event for.
+	 * @return		True if a multiple to T has been managed, false else.
+	 */
+	bool processAccess(Edge *e, const Access& a) {
 		Event *evt = nullptr;
 
 		// build the event
 		switch(a.action()) {
 		case NO_ACCESS:
-			return;
+			return false;
 
 		case DIRECT_LOAD:
 		case DIRECT_STORE:
@@ -285,22 +333,38 @@ protected:
 			break;
 			
 		case PURGE:
-			return;
+			return false;
 
 		case LOAD:
 		case STORE:
 			switch(a.kind()) {
-			case ANY:	evt = processAny(e, a); break;
-			case BLOCK:	evt = processBlock(e, a); break;
-			case ENUM:	evt = processEnum(e, a); break;
-			case RANGE:	evt = processAny(e, a); break;
-			default:	ASSERT(false); break;
+			case ANY:
+				if(a.inst()->isMulti()) {
+					processMultiTop(e, a);
+					return true;
+				}
+				else
+					evt = processAny(e, a);
+				break;
+			case BLOCK:
+				evt = processBlock(e, a);
+				break;
+			case ENUM:
+				evt = processEnum(e, a);
+				break;
+			case RANGE:
+				evt = processAny(e, a);
+				break;
+			default:
+				ASSERT(false);
+				break;
 			}
 			break;
 		}
 		
 		// add the event
 		EVENT(e).add(evt);
+		return false;
 	}
 	
 	void processBB(WorkSpace *ws, CFG *g, Block *b_) override {
@@ -309,9 +373,13 @@ protected:
 		auto b = b_->toBasic();
 
 		// set events
-		for(const auto& a: *ACCESSES(b))
-			for(auto e: b->inEdges())
-				processAccess(e, a);
+		for(auto e: b->inEdges()) {
+			Inst *multi = nullptr;
+			for(const auto& a: *ACCESSES(b))
+				if(a.inst() != multi)
+					if(processAccess(e, a))
+						multi = a.inst();
+		}
 	}
 	
 	void dumpBB(Block *v, io::Output& out) override {
@@ -335,6 +403,7 @@ private:
 	int cnt[CAT_CNT];
 	ilp::System *sys;
 	bool _explicit;
+	const hard::Cache *cache;
 };
 
 
@@ -344,10 +413,7 @@ p::declare EventBuilder::reg = p::init("otawa::dcache::EventBuilder", Version(1,
 	.require(EXTENDED_LOOP_FEATURE)
 	.require(hard::MEMORY_FEATURE)
 	.require(ipet::ASSIGNED_VARS_FEATURE)
-	//.use(MAY_FEATURE)
-	//.use(PERS_FEATURE)
-	//.use(MULTI_PERS_FEATURE)
-	//.provide(CATEGORY_FEATURE)
+	.require(ACCESS_FEATURE)
 	.extend<BBProcessor>()
 	.make<EventBuilder>();
 

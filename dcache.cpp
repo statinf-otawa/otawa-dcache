@@ -111,16 +111,24 @@ namespace otawa { namespace dcache {
 /**
  * Build a null block access.
  */
-Access::Access(): _inst(nullptr), _kind(ANY), _action(NO_ACCESS) {
-}
+Access::Access():
+	_inst(nullptr),
+	_kind(ANY),
+	_action(NO_ACCESS),
+	_type(sem::NO_TYPE),
+	_index(-1)
+	{ }
 
 /**
  * Build a block access of type ANY.
  * @param instruction	Instruction performing the access.
  * @param action		Type of action.
+ * @param type			Type of accessed data (optional).
+ * @param index			Access index for multiple memory access instruction
+ * 						(optional).
  */
-Access::Access(Inst *instruction, action_t action)
-: _inst(instruction), _kind(ANY), _action(action) {
+Access::Access(Inst *instruction, action_t action, sem::type_t type, int index)
+: _inst(instruction), _kind(ANY), _action(action), _type(type), _index(index) {
 	ASSERT(instruction != nullptr);
 }
 
@@ -130,9 +138,18 @@ Access::Access(Inst *instruction, action_t action)
  * @param instruction	Instruction performing the access.
  * @param action		Type of action.
  * @param block			Accessed block.
+ * @param type			Type of accessed data (optional).
+ * @param index			Access index for multiple memory access instruction
+ * 						(optional).
  */
-Access::Access(Inst *instruction, action_t action, const CacheBlock *block)
-: _inst(instruction), _kind(BLOCK), _action(action) {
+Access::Access(
+	Inst *instruction,
+	action_t action,
+	const CacheBlock *block,
+	sem::type_t type,
+	int index
+): _inst(instruction), _kind(BLOCK), _action(action), _type(type), _index(index)
+{
 	ASSERT(instruction != nullptr);
 	data.blk = block;
 }
@@ -143,11 +160,18 @@ Access::Access(Inst *instruction, action_t action, const CacheBlock *block)
  * ranges across the address modulo by 0.
  * @param instruction	Instruction performing the access.
  * @param action		Type of action.
- * @param first			First accessed block (must a cache block boundary address).
- * @param last			Last access block (must a cache block boundary address).
+ * @param blocks		List of accessed blocks.
+ * @param type			Type of accessed data (optional).
+ * @param index			Access index for multiple memory access instruction
+ * 						(optional).
  */
-Access::Access(Inst *instruction, action_t action, const Vector<const CacheBlock *>& blocks)
-: _inst(instruction), _kind(ENUM), _action(action) {
+Access::Access(
+	Inst *instruction,
+	action_t action,
+	const Vector<const CacheBlock *>& blocks,
+	sem::type_t type,
+	int index
+): _inst(instruction), _kind(ENUM), _action(action), _type(type), _index(index) {
 	ASSERT(instruction != nullptr);
 	data.enm = new enum_t;
 	data.enm->fst = blocks.first()->set();
