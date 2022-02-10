@@ -384,7 +384,7 @@ const CacheBlock *Access::blockIn(int set) const {
 		if(f <= l || set >= f)
 			return bs[set - f];
 		else
-			return bs[set + (bs.length() - l)];
+			return bs[bs.length() - l + set - 1];
 	}
 	else
 		return nullptr;
