@@ -429,6 +429,6 @@ p::declare EventBuilder::reg = p::init("otawa::dcache::EventBuilder", Version(1,
  * 
  * @ingroup dcache
  */
-p::feature EVENT_FEATURE("otawa::dcache::EVENT_FEATURE", p::make<EventBuilder>());
+p::feature EVENTS_FEATURE("otawa::dcache::EVENT_FEATURE", p::make<EventBuilder>());
 
 }}	// otawa::dcache
