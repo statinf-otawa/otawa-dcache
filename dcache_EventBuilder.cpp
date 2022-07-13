@@ -71,14 +71,14 @@ public:
 
 	type_t type() const override { return LOCAL; }
 
-	bool isEstimating(bool on) override {
+	bool isEstimating(bool on) const override {
 		if(on)
 			return !_xs.isEmpty();
 		else
 			return false;
 	}
 	
-	void estimate(ilp::Constraint *cons, bool on) override {
+	void estimate(ilp::Constraint *cons, bool on) const override {
 		if(on)
 			_xs.addRight(cons);
 	}
