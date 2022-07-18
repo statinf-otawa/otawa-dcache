@@ -155,8 +155,9 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 
 			// range too big
 			else if(addr.isInf()
-			|| _cache->countBlocks(addr.start(), addr.stop()) >= _cache->setCount())
+			|| _cache->countBlocks(addr.start(), addr.stop()) >= (unsigned)_cache->setCount()){
 				accs.add(Access(inst, action, buf[i].type(), buf[i].memIndex()));
+            }
 			
 			// range access
 			else {

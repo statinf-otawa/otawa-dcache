@@ -71,14 +71,14 @@ public:
 
 	type_t type() const override { return LOCAL; }
 
-	bool isEstimating(bool on) override {
+	bool isEstimating(bool on) const override {
 		if(on)
 			return !_xs.isEmpty();
 		else
 			return false;
 	}
 	
-	void estimate(ilp::Constraint *cons, bool on) override {
+	void estimate(ilp::Constraint *cons, bool on) const override {
 		if(on)
 			_xs.addRight(cons);
 	}
@@ -429,6 +429,6 @@ p::declare EventBuilder::reg = p::init("otawa::dcache::EventBuilder", Version(1,
  * 
  * @ingroup dcache
  */
-p::feature EVENT_FEATURE("otawa::dcache::EVENT_FEATURE", p::make<EventBuilder>());
+p::feature EVENTS_FEATURE("otawa::dcache::EVENT_FEATURE", p::make<EventBuilder>());
 
 }}	// otawa::dcache

@@ -12,7 +12,7 @@ set(EVENT_FLAGS
 	${OFLAGS}
 	"require:otawa::dcache::MULTI_PERS_FEATURE"
 	"require:otawa::dcache::MAY_FEATURE"
-	"require:otawa::dcache::EVENT_FEATURE"
+	"require:otawa::dcache::EVENTS_FEATURE"
 )
 
 set(TESTS

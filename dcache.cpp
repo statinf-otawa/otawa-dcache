@@ -52,7 +52,7 @@ namespace otawa { namespace dcache {
  * feature and the cache addresses are obtained from @ref otawa::ADDRESS_ANALYSIS_FEATURE.
  * In OTAWA, there are different feature to obtain the addresses represented by
  * the following features:
- *	* otawa::dcache::CLP_BLOCK_FEATURE -- use the plug-in CLP for address representation.
+ *	* otawa::dcache::CLP_ACCESS_FEATURE -- use the plug-in CLP for address representation.
  *
  * To select which address provider to use, one has to requireone of the previous
  * by hand before running other data cache analyses.
@@ -66,8 +66,6 @@ namespace otawa { namespace dcache {
  *		(dcache::MUST_ACS_FEATURE, dcache::PERS_ACS_FEATURE, dcache::MAY_ACS_FEATURE),
  *	* category derivation -- from the ACS computed in the previous phases,
  *		a category is computed and linked to each block access (dcache::CATEGORY_FEATURE),
- *	* constraint generation in ILP system to bound the variable count the misses
- *		(dcache::CONSTRAINTS_FEATURE),
  *	* time computation -- from the categories, the execution time of a block may
  *		be computed and this feature provides a very trivial way to include
  *		this time in the objective function of ILP system (dcache::WCET_FUNCTION_FEATURE),
