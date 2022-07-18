@@ -38,11 +38,11 @@ namespace otawa { namespace dcache {
  *
  * This module is dedicated to the categorisation of data cache accesses.
  * As for the instruction cache, four categories are handled:
- *	* @ref	otawa::cache::ALWAYS_HIT if the access results always in a hit,
- *	* @ref	otawa::cache::FIRST_MISS (also named persistent) if the first access
+ *	* @ref	otawa::cache::AH if the access results always in a hit,
+ *	* @ref	otawa::cache::PE if the first access
  *		is unknown and the following accesses results in hits,
- *	* @ref otawa::cache::ALWAYS_MISS if the access results always in a miss,
- *	* @ref otawa::cache::NOT_CLASSIFIED if the previous categories do not apply.
+ *	* @ref otawa::cache::AM if the access results always in a miss,
+ *	* @ref otawa::cache::NC if the previous categories do not apply.
  *
  * This module supports the following data cache configuration:
  *	* replacement policy -- LRU

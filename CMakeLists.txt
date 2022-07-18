@@ -12,6 +12,7 @@ set(SOURCES
 	"dcache_MAY.cpp"
 	"dcache_MUST.cpp"
 	"dcache_PERS.cpp"
+	"dcache_CategoryBuilder.cpp"
 )
 
 
