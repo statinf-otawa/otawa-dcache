@@ -46,7 +46,7 @@ public:
 	ai::State *entry() override;
 	bool equals(ai::State *s1, ai::State *s2) override;
 	ai::State *join(ai::State *s1, ai::State *s2) override;
-
+	ai::State *update(Block *v, ai::State *s) override;
 	ai::State *update(Edge *e, ai::State *s) override;
 
 	bool implementsPrinting() override;

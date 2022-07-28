@@ -217,6 +217,7 @@ extern p::feature CATEGORY_FEATURE;
 
 // events
 extern p::feature EVENTS_FEATURE;
+extern p::feature PREFIX_EVENTS_FEATURE;
 
 } }		// otawa::dcache
 

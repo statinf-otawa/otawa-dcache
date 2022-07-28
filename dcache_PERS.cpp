@@ -170,10 +170,10 @@ ai::State *PERS::join(ai::State *_1, ai::State *_2) {
 }
 
 ///
-ai::State *PERS::update(Edge *e, ai::State *s) {
+ai::State *PERS::update(Block *v, ai::State *s) {
 	auto os = acs(s);
 	if(os != BOT) {
-		for(const auto& a: *ACCESSES(e->sink()))
+		for(const auto& a: *ACCESSES(v))
 			if(a.access(S))
 				os = acs(update(a, os));
 	}

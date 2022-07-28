@@ -58,6 +58,7 @@ public:
 	ai::State *top() override;
 	ai::State *entry() override;
 	bool equals(ai::State *s1, ai::State *s2) override;
+	ai::State *update(Edge *e, ai::State *s) override;
 
 	bool implementsPrinting() override;
 	void print(ai::State *s, io::Output& out) override;

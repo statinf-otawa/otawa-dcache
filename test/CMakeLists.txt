@@ -15,6 +15,13 @@ set(EVENT_FLAGS
 	"require:otawa::dcache::EVENTS_FEATURE"
 )
 
+set(PREFIX_FLAGS
+	${OFLAGS}
+	"require:otawa::dcache::MULTI_PERS_FEATURE"
+	"require:otawa::dcache::MAY_FEATURE"
+	"require:otawa::dcache::PREFIX_EVENTS_FEATURE"
+)
+
 set(TESTS
 	"singlevar"
 	"array"
@@ -65,5 +72,10 @@ foreach(TEST IN LISTS TESTS)
 		DEPENDS "${TEST}.elf"
 		COMMAND "operform" "${TEST}.elf" ${EVENT_FLAGS}
 	)
-	
+
+	add_custom_target(test-prefix-${TEST}
+		DEPENDS "${TEST}.elf"
+		COMMAND "operform" "${TEST}.elf" ${PREFIX_FLAGS}
+	)
+
 endforeach()

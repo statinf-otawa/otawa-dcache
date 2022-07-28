@@ -33,7 +33,7 @@ public:
 
 	ai::State *entry() override;
 	ai::State *join(ai::State *s1, ai::State *s2) override;
-	ai::State *update(Edge *e, ai::State *s) override;
+	ai::State *update(Block *v, ai::State *s) override;
 	ai::State *update(const Access& a, ai::State *s) override;
 
 	ACS *access(ACS *s, int b);

@@ -155,6 +155,11 @@ bool ACSDomain::equals(ai::State *_1, ai::State *_2) {
 }
 
 ///
+ai::State *ACSDomain::update(Edge *e, ai::State *s) {
+	return s;
+}
+
+///
 bool ACSDomain::implementsPrinting() {
 	return true;
 }

@@ -152,25 +152,16 @@ ai::State *MultiPERS::join(ai::State *s1_, ai::State *s2_) {
 	}
 }
 
+
 ///
 ai::State *MultiPERS::update(Edge *e, ai::State *s_) {
 	auto s = multi(s_);
-
-	// BOT case
-	if(s == BOT)
-		return BOT;
-	
-	// function call case
-	else if(e->sink()->isSynth())
-		ds.put(e->sink(), s->as.count());
-
-	// manage loop and return
 	if(LOOP_EXIT(e))
 		os = copy(s, s->as.count() + Loop::of(e->sink())->depth() - Loop::of(e->source())->depth(), acs(pers.entry()));
 	else if(LOOP_ENTRY(e))
-		os = copy(s, s->as.count() + 1, acs(pers.entry()));
+		os = copy(s, s->as.count() + 1, acs(pers.entry()));	
 	else if(!e->source()->isSynth())
-		os = copy(s);
+		os = s;
 	else {
 		int d = ds.get(e->source(), -1);
 		if(d == -1)
@@ -178,11 +169,26 @@ ai::State *MultiPERS::update(Edge *e, ai::State *s_) {
 		else if(d == s->as.count())
 			os = copy(s);
 		else
-			os = copy(s, d, acs(pers.entry()));
+			os = copy(s, d, acs(pers.entry()));		
 	}
+	return os;
+}
+
+
+///
+ai::State *MultiPERS::update(Block *v, ai::State *s_) {
+	auto s = multi(s_);
+
+	// BOT case
+	if(s == BOT)
+		return BOT;
+	
+	// function call case
+	if(v->isSynth())
+		ds.put(v, s->as.count());
 
 	// update the state
-	for(const auto& a: *ACCESSES(e->sink()))
+	for(const auto& a: *ACCESSES(v))
 		if(a.access(S))
 			for(int i = 0; i < os->as.count(); i++)
 				os->as[i] = acs(pers.update(a, os->as[i]));

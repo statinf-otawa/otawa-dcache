@@ -28,8 +28,7 @@ To enable testing,
 
 	$ cmake . -DWITH_TEST=yes
 
-Currently, testing is only provided for small programs: `singlevar`, `array`,
-`pointer` or `pointer2`.
+Currently, testing is only provided for small programs: `singlevar`, `array`, `pointer` or `pointer2`.
 
 The test cases encompass:
   * `access` -- access building
@@ -38,6 +37,7 @@ The test cases encompass:
   * `multi` -- Multi persistence analysis
   * `may`-- MAY analysis
   * `event` -- event generation
+  * `prefix` -- prefix event generation
 
 To launch a test,
 

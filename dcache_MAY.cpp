@@ -160,9 +160,9 @@ ai::State *MAY::join(ai::State *_1, ai::State *_2) {
 }
 
 ///
-ai::State *MAY::update(Edge *e, ai::State *s) {
+ai::State *MAY::update(Block *v, ai::State *s) {
 	os = acs(s);
-	for(const auto& a: *ACCESSES(e->sink()))
+	for(const auto& a: *ACCESSES(v))
 		if(a.access(S))
 			os = acs(update(a, os));
 	return os;

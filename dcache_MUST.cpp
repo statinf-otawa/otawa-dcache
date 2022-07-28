@@ -153,9 +153,9 @@ ai::State *MUST::join(ai::State *_1, ai::State *_2) {
 }
 
 ///
-ai::State *MUST::update(Edge *e, ai::State *s) {
+ai::State *MUST::update(Block *v, ai::State *s) {
 	os = acs(s);
-	for(const auto& a: *ACCESSES(e->sink()))
+	for(const auto& a: *ACCESSES(v))
 		if(a.access(S))
 			os = acs(update(a, os));
 	return os;

@@ -33,7 +33,7 @@ public:
 	MUST(const SetCollection& coll, int set, int assoc, ListGC& gc_);
 
 	ai::State *join(ai::State *s1, ai::State *s2) override;
-	ai::State *update(Edge *e, ai::State *s) override;
+	ai::State *update(Block *v, ai::State *s) override;
 
 	ai::State *update(const Access& a, ai::State *s) override;
 	ACS *preaccess(ACS *s, int b);
