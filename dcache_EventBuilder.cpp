@@ -87,7 +87,7 @@ private:
 	const Access& _acc;
 	time_t _cost;
 	occurrence_t _occ;	
-	ilp::Expression _xs;
+	mutable ilp::Expression _xs;
 };
 
 
