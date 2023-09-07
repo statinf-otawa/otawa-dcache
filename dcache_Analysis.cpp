@@ -20,6 +20,8 @@
  */
 
 #include "otawa/dcache/Analysis.h"
+#include <elm/alloc/ListGC.h>
+#include <otawa/ai/CFGAnalyzer.h>
 
 namespace otawa { namespace dcache {
 

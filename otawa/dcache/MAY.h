@@ -19,7 +19,7 @@
  *	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 #ifndef OTAWA_DCACHE_MAY_H_
-#define OTAWA_ICAT_MAY_H_
+#define OTAWA_DCACHE_MAY_H_
 
 #include <elm/int.h>
 #include "ACS.h"

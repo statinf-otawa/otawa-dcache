@@ -80,7 +80,7 @@ public:
 	
 	void estimate(ilp::Constraint *cons, bool on) const override {
 		if(on)
-			_xs.addRight(cons);
+			_xs.addLeft(cons);
 	}
 
 private:
