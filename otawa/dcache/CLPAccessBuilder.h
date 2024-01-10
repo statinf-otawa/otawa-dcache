@@ -48,7 +48,7 @@ protected:
 	void destroyBB (WorkSpace *ws, CFG *cfg, otawa::Block *b) override;
 	void destroy(WorkSpace *ws) override;
 	void dumpBB(otawa::Block *v, io::Output& out) override;
-	
+
 	const hard::Cache *_cache;
 	const hard::Memory *_mem;
 	SetCollection *_coll;

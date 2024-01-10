@@ -19,8 +19,11 @@
  *	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <elm/io/StringOutput.h>
+
 #include <otawa/hard/CacheConfiguration.h>
 #include <otawa/clp/features.h>
+#include <otawa/prog/Process.h>
 #include <otawa/sem/inst.h>
 
 #include "otawa/dcache/CLPAccessBuilder.h"
@@ -141,7 +144,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 				auto b = _coll->add(a);
 				if(b == nullptr)
 					throw otawa::Exception(_ << "no memory bank for address "
-						<< Address(a) << " accessed from " << inst->address());
+						<< Address(a) << " accessed from " << instInfo(inst) << '.');
 				if(action == STORE && !_cache->doesWriteAllocate())
 					action = asDirect(action);
 				else if(b->id() < 0) {
@@ -228,7 +231,6 @@ void CLPAccessBuilder::dumpBB(otawa::Block *v, io::Output& out) {
 	for(const auto& a: *ACCESSES(v))
 		out << "\t\t" << a << io::endl;
 }
-
 
 /**
  * This feature is a specialization of @ref otawa::dcache::ACCESS_FEATURE using
