@@ -144,7 +144,7 @@ void CLPAccessBuilder::processBB(WorkSpace *ws, CFG *g, otawa::Block *b) {
 				auto b = _coll->add(a);
 				if(b == nullptr)
 					throw otawa::Exception(_ << "no memory bank for address "
-						<< Address(a) << " accessed from " << instInfo(inst) << '.');
+						<< Address(a) << " accessed from " << inst << '.');
 				if(action == STORE && !_cache->doesWriteAllocate())
 					action = asDirect(action);
 				else if(b->id() < 0) {
