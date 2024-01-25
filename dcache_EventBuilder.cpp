@@ -54,13 +54,15 @@ public:
 	cstring name() const override { return "DC"; }
 	string detail() const override {
 		StringBuffer buf;
-		buf << name() << ": " << _acc << " - " << _occ;
+		buf << name() << ": " << CATEGORY(_acc) << " - " << _occ;
 		if(_occ == SOMETIMES) {
 			if(_xs.count() > 0)
 				buf << " (xe <= " << _xs << ")";
 			else
 				buf << " (no bound)";
 		}
+		buf << " - " << _acc.action();
+		// cout << buf.copyString()<< endl;
 		return buf.toString();
 	}
 
