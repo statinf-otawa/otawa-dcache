@@ -55,14 +55,14 @@ public:
 	string detail() const override {
 		StringBuffer buf;
 		buf << name() << ": " << CATEGORY(_acc) << " - " << _occ;
-		if(_occ == SOMETIMES) {
-			if(_xs.count() > 0)
-				buf << " (xe <= " << _xs << ")";
-			else
-				buf << " (no bound)";
-		}
+		// if(_occ == SOMETIMES) {
+		// 	if(_xs.count() > 0)
+		// 		buf << " (xe <= " << _xs << ")";
+		// 	else
+		// 		buf << " (no bound)";
+		// }
 		buf << " - " << _acc.action();
-		// cout << buf.copyString()<< endl;
+		cout << _xs<< endl;
 		return buf.toString();
 	}
 
@@ -268,7 +268,7 @@ protected:
 		ot::time t = worstAccessTime(a);
 		for(int i = 0; i < cnt; i++)
 			addEvent(e,
-				new Event(a, t,	Event::SOMETIMES, ilp::Expression::null));
+				new Event(a, t,	Event::ALWAYS, ilp::Expression::null));
 	}
 	
 	Event *processBlock(Edge *e, const Access& a) {
